@@ -13,8 +13,6 @@ from google.oauth2.service_account import Credentials
 
 data = pd.read_csv('combined_shit3.csv')
 
-st.write(st.secrets["gspread"]["client_email"])
-
 scope = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
@@ -25,7 +23,7 @@ credentials = Credentials.from_service_account_info(
     scopes = scope
 )
 gc = gspread.authorize(credentials)
-# ratings_sheet = gc.open("MovieFeedback").worksheet("Ratings")
+ratings_sheet = gc.open("MovieFeedback").worksheet("Ratings")
 sheet = gc.open("MovieFeedback").sheet1
 
 
