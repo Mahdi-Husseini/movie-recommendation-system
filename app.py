@@ -7,8 +7,22 @@ import streamlit.components.v1 as components
 import requests
 import os
 import json
+import gspread
+import datetime
+from google.oauth2.service_account import Credentials
 
 data = pd.read_csv('combined_shit3.csv')
+
+
+scope = ["https://www.googleapis.com/auth/spreadsheets"]
+credentials = Credentials.from_service_account_info(
+    st.secrets["gspread"],
+    scopes=scope
+)
+gc = gspread.authorize(credentials)
+ratings_sheet = gc.open("MovieFeedback").worksheet("Ratings")
+sheet = gc.open("MovieFeedback").sheet1
+
 
 @st.cache_resource
 def load_similarity_matrix(data):
@@ -21,34 +35,45 @@ similarity_matrix = load_similarity_matrix(data)
 
 #################### feedback shit ##############################
 
-MOVIE_DIR = os.getcwd()
-FEEDBACK_FILE = os.path.join(MOVIE_DIR, "feedback_log.json")
+# MOVIE_DIR = os.path.dirname(__file__)
+# FEEDBACK_FILE = os.path.join(MOVIE_DIR, "feedback_log.json")
 
 
-def log_feedback(input_movie_id, filters, clicked_movie_id, liked=True):
-    feedback = {
-        "input_movie_id": input_movie_id,
-        "filters": filters,
-        "clicked": clicked_movie_id if liked else None,
-        "unclicked": clicked_movie_id if not liked else None
-    }
+# def log_feedback(input_movie_id, filters, clicked_movie_id, liked=True):
+#     feedback = {
+#         "input_movie_id": input_movie_id,
+#         "filters": filters,
+#         "clicked": clicked_movie_id if liked else None,
+#         "unclicked": clicked_movie_id if not liked else None
+#     }
 
-    try:
-        if os.path.exists(FEEDBACK_FILE):
-            with open(FEEDBACK_FILE, "r") as f:
-                all_feedback = json.load(f)
-        else:
-            all_feedback = []
+def log_feedback_to_sheet(input_movie_id, filters, clicked_movie_id, liked=True):
 
-        all_feedback.append(feedback)
+    row = [
+        str(datetime.datetime.now()),
+        input_movie_id,
+        clicked_movie_id if liked else "",
+        clicked_movie_id if not liked else "",
+        json.dumps(filters)
+    ]
+    sheet.append_row(row)
 
-        with open(FEEDBACK_FILE, "w") as f:
-            json.dump(all_feedback, f, indent=2)
+    # try:
+    #     if os.path.exists(FEEDBACK_FILE):
+    #         with open(FEEDBACK_FILE, "r") as f:
+    #             all_feedback = json.load(f)
+    #     else:
+    #         all_feedback = []
 
-        print(f"✅ Feedback saved: {feedback}")  # Debug output
+    #     all_feedback.append(feedback)
 
-    except Exception as e:
-        print(f"❌ Error writing feedback: {e}")
+    #     with open(FEEDBACK_FILE, "w") as f:
+    #         json.dump(all_feedback, f, indent=2)
+
+    #     print(f"✅ Feedback saved: {feedback}")  # Debug output
+
+    # except Exception as e:
+    #     print(f"❌ Error writing feedback: {e}")
 
 
 
@@ -250,19 +275,23 @@ if st.session_state.get('pred_movies') is not None:
             col1, col2 = st.columns(2)
             with col1:
                 if st.button("👍 Like", key=f"like_{row['id']}_{movie}"):
-                    log_feedback(
+                    log_feedback_to_sheet(
                         st.session_state.input_movie_id,
                         st.session_state.filter_context,
-                        row['id'], liked=True
+                        row['id'],
+                        liked=True 
                     )
+
                     st.write("❤️ Thanks for your feedback!")    # ← UI debug
             with col2:
                 if st.button("👎 Dislike", key=f"dislike_{row['id']}_{movie}"):
-                    log_feedback(
+                    log_feedback_to_sheet(
                         st.session_state.input_movie_id,
                         st.session_state.filter_context,
-                        row['id'], liked=False
+                        row['id'],
+                        liked=False
                     )
+
                     st.write("❤️ Thanks for your feedback!") # ← UI debug
 
             st.write("---")
@@ -284,17 +313,29 @@ if st.session_state.get("pred_movies") is not None:
         if st.button("✅ Submit Rating"):
             try:
                 # Store with timestamp for better tracking
-                with open("relevance_ratings.json", "a") as f:
-                    json.dump({
-                        "rating": st.session_state.rating,
-                        "input_movie_id": st.session_state.input_movie_id,
-                        "filters": st.session_state.filter_context,
-                        "timestamp": pd.Timestamp.now().isoformat()
-                    }, f)
-                    f.write("\n")
+                # with open("relevance_ratings.json", "a") as f:
+                #     json.dump({
+                #         "rating": st.session_state.rating,
+                #         "input_movie_id": st.session_state.input_movie_id,
+                #         "filters": st.session_state.filter_context,
+                #         "timestamp": pd.Timestamp.now().isoformat()
+                #     }, f)
+                #     f.write("\n")
+                rating_row = [
+                    str(datetime.datetime.now()),
+                    "Rating",
+                    st.session_state.input_movie_id,
+                    st.session_state.rating,
+                    json.dumps(st.session_state.filter_context)
+                ]
+                ratings_sheet.append_row(rating_row)
                 st.session_state.rating_submitted = True
                 st.success("✅ Thank you for your feedback!")
             except Exception as e:
                 st.error(f"❌ Failed to save rating: {e}")
     else:
         st.success("✅ You’ve already submitted your rating. Thanks again!")
+
+
+
+
