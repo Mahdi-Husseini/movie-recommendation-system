@@ -13,6 +13,7 @@ from google.oauth2.service_account import Credentials
 
 data = pd.read_csv('combined_shit3.csv')
 
+st.write(st.secrets["gspread"]["client_email"])
 
 credentials = Credentials.from_service_account_info(
     st.secrets["gspread"],
