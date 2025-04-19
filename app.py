@@ -5,6 +5,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import streamlit.components.v1 as components
 import requests
+import os
+import json
 
 data = pd.read_csv('combined_shit3.csv')
 
@@ -17,8 +19,41 @@ def load_similarity_matrix(data):
 
 similarity_matrix = load_similarity_matrix(data)
 
+#################### feedback shit ##############################
 
-import requests
+MOVIE_DIR = os.path.dirname(__file__)
+FEEDBACK_FILE = os.path.join(MOVIE_DIR, "feedback_log.json")
+
+
+def log_feedback(input_movie_id, filters, clicked_movie_id, liked=True):
+    feedback = {
+        "input_movie_id": input_movie_id,
+        "filters": filters,
+        "clicked": clicked_movie_id if liked else None,
+        "unclicked": clicked_movie_id if not liked else None
+    }
+
+    try:
+        if os.path.exists(FEEDBACK_FILE):
+            with open(FEEDBACK_FILE, "r") as f:
+                all_feedback = json.load(f)
+        else:
+            all_feedback = []
+
+        all_feedback.append(feedback)
+
+        with open(FEEDBACK_FILE, "w") as f:
+            json.dump(all_feedback, f, indent=2)
+
+        print(f"✅ Feedback saved: {feedback}")  # Debug output
+
+    except Exception as e:
+        print(f"❌ Error writing feedback: {e}")
+
+
+
+
+################# fetching movies via api #######################
 
 def fetch_poster(movie_id):
     # Fetch movie details
@@ -46,20 +81,20 @@ st.image('msba.png')
 
 st.title('Movie Recommendation System')
 
-st.header('MSBA 315 - Group 7')
+# st.header('MSBA 315 - Group 7')
 
-st.info('This is a movie recommendation system that suggests movies based on your preferences. You can filter movies by genre, popularity, and vote average in the sidebar.')
-with st.container():
-    st.markdown("""
-    <div style="background-color:#1f1f1f;padding:20px;border-radius:10px">
-        <h3 style="color:white;">Participants:</h3>
-        <h4 style="color:white;">• Motorcycle Dude</h4>
-        <h4 style="color:white;">• Cat Woman</h4>
-        <h4 style="color:white;">• Alex's Mom</h4>
-        <h4 style="color:white;">• Sergi Lavrov</h4>
-        <h4 style="color:white;">• Sleepless Man</h4>
-    </div>
-    """, unsafe_allow_html=True)
+# st.info('This is a movie recommendation system that suggests movies based on your preferences. You can filter movies by genre, popularity, and vote average in the sidebar.')
+# with st.container():
+#     st.markdown("""
+#     <div style="background-color:#1f1f1f;padding:20px;border-radius:10px">
+#         <h3 style="color:white;">Participants:</h3>
+#         <h4 style="color:white;">• Motorcycle Dude</h4>
+#         <h4 style="color:white;">• Cat Woman</h4>
+#         <h4 style="color:white;">• Alex's Mom</h4>
+#         <h4 style="color:white;">• Sergi Lavrov</h4>
+#         <h4 style="color:white;">• Sleepless Man</h4>
+#     </div>
+#     """, unsafe_allow_html=True)
 
 st.write('---')
 
@@ -170,40 +205,96 @@ def recommend_movie(title, data, similarity_matrix, unselected_genres=None, sele
 
 
 
-movie =  st.selectbox('Select the Movie:', data['original_title'])
+movie =  st.selectbox('Select a Movie you Enjoyed:', data['original_title'])
 
 butt = st.button('Recommend')
 
 if butt:
-    pred_movies = recommend_movie(
-        movie,
-        data,
-        similarity_matrix,
+    st.session_state.input_movie_id = int(data[data['original_title']==movie]['id'].values[0])
+    st.session_state.filter_context = {
+        "genres": selected_genres,
+        "popularity": pop_range,
+        "vote_average": vote_range
+    }
+
+    st.session_state.pred_movies = recommend_movie(
+        movie, data, similarity_matrix,
         unselected_genres=unselected_genres,
         selected_genres=selected_genres,
-        min_pop=pop_range[0],
-        max_pop=pop_range[1],
-        min_vote=vote_range[0],
-        max_vote=vote_range[1]
+        min_pop=pop_range[0], max_pop=pop_range[1],
+        min_vote=vote_range[0], max_vote=vote_range[1]
     )
-    st.subheader(f'The recommended movies similar to {movie} are:')
-    for _, row in pred_movies.iterrows():
+
+
+# — no longer inside `if butt:` —
+if st.session_state.get('pred_movies') is not None:
+    st.subheader(f"The recommended movies similar to {movie} are:")
+    for _, row in st.session_state.pred_movies.iterrows():
         with st.container():
-            # Try to fetch both poster and trailer
+            poster_url, trailer_url = (None, None)
             try:
                 poster_url, trailer_url = fetch_poster(row['id'])
-            except Exception:
-                poster_url, trailer_url = None, None
+            except:
+                pass
 
-            # Always show poster if available
             st.markdown(f"""
             <div style="background-color:#2b2b2b;padding:15px;margin-bottom:10px;border-radius:8px;">
                 <h4 style="color:#f63366;">🎬 {row['original_title']}</h4>
-                <img alt='poster' src='{poster_url}' height='200'>
+                <img src="{poster_url}" height="200"><br>
             </div>
             """, unsafe_allow_html=True)
 
-            # Show trailer only if available
             if trailer_url:
                 st.video(trailer_url)
-            st.write('***')
+
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("👍 Like", key=f"like_{row['id']}_{movie}"):
+                    log_feedback(
+                        st.session_state.input_movie_id,
+                        st.session_state.filter_context,
+                        row['id'], liked=True
+                    )
+                    st.write("❤️ Thanks for your feedback!")    # ← UI debug
+            with col2:
+                if st.button("👎 Dislike", key=f"dislike_{row['id']}_{movie}"):
+                    log_feedback(
+                        st.session_state.input_movie_id,
+                        st.session_state.filter_context,
+                        row['id'], liked=False
+                    )
+                    st.write("❤️ Thanks for your feedback!") # ← UI debug
+
+            st.write("---")
+
+###############################
+
+# Only show rating if there are predictions
+if st.session_state.get("pred_movies") is not None:
+    st.subheader("📊 Rate the Recommendations")
+
+    if "rating_submitted" not in st.session_state:
+        st.session_state.rating = st.radio(
+            "🎯 Please rate the overall relevance of our recommended movies:",
+            [1, 2, 3, 4, 5],
+            format_func=lambda x: f"{x} - {'⭐' * x}",
+            horizontal=True
+        )
+
+        if st.button("✅ Submit Rating"):
+            try:
+                # Store with timestamp for better tracking
+                with open("relevance_ratings.json", "a") as f:
+                    json.dump({
+                        "rating": st.session_state.rating,
+                        "input_movie_id": st.session_state.input_movie_id,
+                        "filters": st.session_state.filter_context,
+                        "timestamp": pd.Timestamp.now().isoformat()
+                    }, f)
+                    f.write("\n")
+                st.session_state.rating_submitted = True
+                st.success("✅ Thank you for your feedback!")
+            except Exception as e:
+                st.error(f"❌ Failed to save rating: {e}")
+    else:
+        st.success("✅ You’ve already submitted your rating. Thanks again!")
