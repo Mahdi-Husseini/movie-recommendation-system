@@ -21,7 +21,7 @@ similarity_matrix = load_similarity_matrix(data)
 
 #################### feedback shit ##############################
 
-MOVIE_DIR = os.path.dirname(__file__)
+MOVIE_DIR = os.getcwd()
 FEEDBACK_FILE = os.path.join(MOVIE_DIR, "feedback_log.json")
 
 
