@@ -285,7 +285,7 @@ if st.session_state.get('pred_movies') is not None:
                         liked=True 
                     )
 
-                    st.write("❤️ Thanks for your feedback!")    # ← UI debug
+                    st.success("❤️ Thanks for your feedback!")    # ← UI debug
             with col2:
                 if st.button("👎 Dislike", key=f"dislike_{row['id']}_{movie}"):
                     log_feedback_to_sheet(
@@ -295,7 +295,7 @@ if st.session_state.get('pred_movies') is not None:
                         liked=False
                     )
 
-                    st.write("❤️ Thanks for your feedback!") # ← UI debug
+                    st.success("❤️ Thanks for your feedback!") # ← UI debug
 
             st.write("---")
 
