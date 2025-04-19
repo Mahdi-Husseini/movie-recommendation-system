@@ -20,7 +20,7 @@ credentials = Credentials.from_service_account_info(
     scopes=["https://www.googleapis.com/auth/spreadsheets"]
 )
 gc = gspread.authorize(credentials)
-ratings_sheet = gc.open("MovieFeedback").worksheet("Ratings")
+# ratings_sheet = gc.open("MovieFeedback").worksheet("Ratings")
 sheet = gc.open("MovieFeedback").sheet1
 
 
