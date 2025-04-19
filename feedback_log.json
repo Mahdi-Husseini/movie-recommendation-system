@@ -1,0 +1,178 @@
+[
+  {
+    "input_movie_id": 559,
+    "filters": {
+      "genres": [],
+      "popularity": [
+        0.0,
+        875.581305
+      ],
+      "vote_average": [
+        0.0,
+        10.0
+      ]
+    },
+    "clicked": 558,
+    "unclicked": null
+  },
+  {
+    "input_movie_id": 559,
+    "filters": {
+      "genres": [],
+      "popularity": [
+        0.0,
+        875.581305
+      ],
+      "vote_average": [
+        0.0,
+        10.0
+      ]
+    },
+    "clicked": 76170,
+    "unclicked": null
+  },
+  {
+    "input_movie_id": 597,
+    "filters": {
+      "genres": [],
+      "popularity": [
+        0.0,
+        875.581305
+      ],
+      "vote_average": [
+        0.0,
+        10.0
+      ]
+    },
+    "clicked": 24575,
+    "unclicked": null
+  },
+  {
+    "input_movie_id": 597,
+    "filters": {
+      "genres": [],
+      "popularity": [
+        0.0,
+        875.581305
+      ],
+      "vote_average": [
+        0.0,
+        10.0
+      ]
+    },
+    "clicked": 503,
+    "unclicked": null
+  },
+  {
+    "input_movie_id": 597,
+    "filters": {
+      "genres": [],
+      "popularity": [
+        0.0,
+        875.581305
+      ],
+      "vote_average": [
+        0.0,
+        10.0
+      ]
+    },
+    "clicked": null,
+    "unclicked": 109424
+  },
+  {
+    "input_movie_id": 597,
+    "filters": {
+      "genres": [],
+      "popularity": [
+        0.0,
+        875.581305
+      ],
+      "vote_average": [
+        0.0,
+        10.0
+      ]
+    },
+    "clicked": null,
+    "unclicked": 26466
+  },
+  {
+    "input_movie_id": 597,
+    "filters": {
+      "genres": [],
+      "popularity": [
+        0.0,
+        875.581305
+      ],
+      "vote_average": [
+        0.0,
+        10.0
+      ]
+    },
+    "clicked": 87827,
+    "unclicked": null
+  },
+  {
+    "input_movie_id": 597,
+    "filters": {
+      "genres": [],
+      "popularity": [
+        0.0,
+        875.581305
+      ],
+      "vote_average": [
+        0.0,
+        10.0
+      ]
+    },
+    "clicked": null,
+    "unclicked": 8413
+  },
+  {
+    "input_movie_id": 597,
+    "filters": {
+      "genres": [],
+      "popularity": [
+        0.0,
+        875.581305
+      ],
+      "vote_average": [
+        0.0,
+        10.0
+      ]
+    },
+    "clicked": null,
+    "unclicked": 10384
+  },
+  {
+    "input_movie_id": 597,
+    "filters": {
+      "genres": [],
+      "popularity": [
+        0.0,
+        875.581305
+      ],
+      "vote_average": [
+        0.0,
+        10.0
+      ]
+    },
+    "clicked": 62008,
+    "unclicked": null
+  },
+  {
+    "input_movie_id": 597,
+    "filters": {
+      "genres": [],
+      "popularity": [
+        0.0,
+        875.581305
+      ],
+      "vote_average": [
+        0.0,
+        10.0
+      ]
+    },
+    "clicked": null,
+    "unclicked": 9457
+  }
+]
