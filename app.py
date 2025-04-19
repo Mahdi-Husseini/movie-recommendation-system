@@ -15,9 +15,14 @@ data = pd.read_csv('combined_shit3.csv')
 
 st.write(st.secrets["gspread"]["client_email"])
 
+scope = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
+
 credentials = Credentials.from_service_account_info(
     st.secrets["gspread"],
-    scopes=["https://www.googleapis.com/auth/spreadsheets"]
+    scopes = scope
 )
 gc = gspread.authorize(credentials)
 # ratings_sheet = gc.open("MovieFeedback").worksheet("Ratings")
